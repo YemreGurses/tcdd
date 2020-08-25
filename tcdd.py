@@ -87,10 +87,8 @@ while True:
         capacity = capa.replace('(','').replace(')','')
         print(capacity)
         if capacity != fullness:
+            #TO-DO make it OS independent
             notify("Tren boşaldı", "HEMEN BİLETİNİ KAP")
-        
-        # if trip_hour.text != hour:
-        #     notify('Seferlerde degisiklik oldu', title='Kodda ayarlama yap')
 
         i += 1
         print(i)
