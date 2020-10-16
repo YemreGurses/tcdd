@@ -3,32 +3,37 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from win10toast import ToastNotifier
+from datetime import datetime
+from platform import system
 import time
 import os
-
-def notify(title, text):
-    os.system("""
-              osascript -e 'display notification "{}" with title "{}" sound name "default"'
-              """.format(text, title))
 
 path = os.getcwd()
 path += '/chromedriver'
 driver = webdriver.Chrome(path)
 
-
-string0 = 'Ankara Gar'
-string1 = 'Konya YHT'
-date = '12.06.2020' #Gidis tarihi eger bugunse None, degilse '22.11.2019' formatinda yaz
+string0 = 'Konya YHT'
+string1 = 'ERYAMAN YHT'
+date = '16.10.2020' #Gidis tarihi eger bugunse None, degilse '22.11.2019' formatinda yaz
 fullness = '2' #Kapasite bu sayidan farkli olursa bana bildirim at
-hour = '18:00' #Sefer saati format '14:35'
+hour = '18:15' #Sefer saati format '14:35'
 # index = 5 #Sefer listesinde trenin gozuktugu sira
 
+def notify_mac(title, text):
+    os.system("""
+              osascript -e 'display notification "{}" with title "{}" sound name "default"'
+              """.format(text, title))
+
+def notify_windows(title, text):
+    toast = ToastNotifier()
+    toast.show_toast(title,text,duration=20)
 
 i = 0
 while True:
     try:
         driver.get("https://ebilet.tcddtasimacilik.gov.tr/view/eybis/tnmGenel/tcddWebContent.jsf")
-
+        os_type = system()
         wait = WebDriverWait(driver, 10)
 
         from_x = '//*[@id="nereden"]'
@@ -85,13 +90,20 @@ while True:
 
         capa = trip_capacity.text.split(' ')[-1]
         capacity = capa.replace('(','').replace(')','')
-        print(capacity)
         if capacity != fullness:
-            #TO-DO make it OS independent
-            notify("Tren boşaldı", "HEMEN BİLETİNİ KAP")
-
+            if os_type == "Windows":
+                notify_windows("Tren boşaldı", "HEMEN BİLETİNİ KAP")
+            elif os_type == "Darwin":
+                notify_mac("Tren boşaldı", "HEMEN BİLETİNİ KAP")
+            # elif os_type == "Linux":
+                #TO-DO
+                #notify_linux() 
+            else:
+                print("Error: Couldnt get OS information")
+            now = datetime.now()
+            print(capacity + " - Time: " + now.strftime("%m/%d/%Y, %H:%M:%S"))
+            
         i += 1
-        print(i)
     except Exception as exc:
         print(exc)
         continue
